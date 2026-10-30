@@ -83,12 +83,12 @@ def _run_category(rel: Path) -> str:
     return "causal/diagnostic"
 
 
-RUN_COUNTS = {"routing suite": 450, "stage ablation": 360, "single-PDE studies": 449,
-              "causal/diagnostic": 706, "robustness probes": 1210}
+RUN_COUNTS = {"routing suite": 450, "stage ablation": 360, "single-PDE studies": 459,
+              "causal/diagnostic": 1066, "robustness probes": 1210}
 
 
 def check_total_runs(tol_rel: float) -> tuple[str, str, str, str]:
-    """Claim #1: 3,175 recorded training runs, by category.
+    """Claim #1: 3,545 recorded training runs, by category.
 
     A run is any record carrying both ``training_time`` and ``seed``, in any JSON
     under experiments/results/; records repeated across files (aggregates, copies)
@@ -129,8 +129,8 @@ def check_total_runs(tol_rel: float) -> tuple[str, str, str, str]:
             continue
         walk(data, _run_category(f.relative_to(RESULTS)))
     total = sum(counts.values())
-    ok = total == 3175 and dict(counts) == RUN_COUNTS
-    return ("PASS" if ok else "FAIL", str(total), "3175",
+    ok = total == 3545 and dict(counts) == RUN_COUNTS
+    return ("PASS" if ok else "FAIL", str(total), "3545",
             ", ".join(f"{k} {v}" for k, v in sorted(counts.items())))
 
 def check_routing_nested(tol_rel: float) -> tuple[str, float, float, str]:
@@ -466,8 +466,36 @@ def check_causal_pretrain(tol_rel: float) -> tuple[str, str, str, str]:
             "+5.9% / -2.4%, 6/9, 5/9 (3)", "9 PDEs, 27 BH-FDR tests")
 
 
+def check_causal_controls(tol_rel: float) -> tuple[str, str, str, str]:
+    """Epoch-matched controls: reweighting -0.2% / -3.9% (9/9 worse w/o pretraining),
+    uniform Stage 3 +6.0%, pretraining 125-694% with epochs matched."""
+    res = _load(RESULTS / "paper_c" / "control_statistics" / "results.json")
+
+    def rows(fam: str, comp: str) -> list[dict]:
+        return [r for r in res if r["family"] == fam and r["comparison"] == comp]
+
+    def mean(rs: list[dict]) -> float:
+        return sum(r["delta_pct"] for r in rs) / len(rs)
+
+    rw_w = rows("reweighting", "with pretraining")
+    rw_wo = rows("reweighting", "without pretraining")
+    ex_w = rows("extra_training", "with pretraining")
+    pm = rows("pretraining_matched", "no Stage 3")
+    pm_paper = [100 * (r["mean_reference"] - r["mean_treatment"]) / r["mean_treatment"] for r in pm]
+    worse_wo = sum(r["bh_fdr_significant"] and r["delta_pct"] < 0 for r in rw_wo)
+    ok = (len(res) == 54 and round(mean(rw_w), 1) == -0.2 and round(mean(rw_wo), 1) == -3.9
+          and worse_wo == 9 and round(mean(ex_w), 1) == 6.0
+          and sum(r["bh_fdr_significant"] for r in ex_w) == 6
+          and round(min(pm_paper)) == 125 and round(max(pm_paper)) == 694
+          and all(r["bh_fdr_significant"] for r in pm))
+    return ("PASS" if ok else "FAIL",
+            f"rw {mean(rw_w):+.1f}/{mean(rw_wo):+.1f} ({worse_wo}/9 worse), "
+            f"uniform S3 {mean(ex_w):+.1f}, pretrain {min(pm_paper):.0f}-{max(pm_paper):.0f}%",
+            "-0.2/-3.9 (9/9), +6.0, 125-694%", "54 BH-FDR tests over 9 PDEs")
+
+
 CHECKS = [
-    ("#1  total recorded runs 3,175", check_total_runs),
+    ("#1  total recorded runs 3,545", check_total_runs),
     ("#6  nested PDE-aware routing 84.6%", check_routing_nested),
     ("#6  full RF+PDE routing 61.5%", check_routing_full_rfpde),
     ("#7  Stage-2 savings 60%", check_budget_savings),
@@ -484,6 +512,7 @@ CHECKS = [
     ("CR  Heat3D d=3 1.41x", check_heat3d),
     ("CR  multiscale 2.68x, fine mode", check_multiscale),
     ("CR  causal x pretrain +5.9/-2.4%", check_causal_pretrain),
+    ("CR  epoch-matched causal controls", check_causal_controls),
 ]
 
 

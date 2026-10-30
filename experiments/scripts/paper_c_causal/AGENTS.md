@@ -11,6 +11,7 @@ Scripts for Paper C: causal-loss diagnosis. The central hypothesis under test is
 |------|-------------|
 | `ablation_statistics.py` | Paired exact Wilcoxon signed-rank tests on the 2×2 stage-ablation results (BH-FDR step-up across 9 PDEs × 3 comparisons = 27 tests; picks up every `paper_c/*_ablation` dir), writing `paper_c/ablation_statistics/results.{json,md}` |
 | `causal_ablation_table.py` | Prints the LaTeX rows of the paper's causal × pretraining table (Δ% residual, bootstrap CI, BH verdict) from `ablation_statistics/results.json`; rerun it instead of editing the table by hand |
+| `control_statistics.py` | Statistics for the epoch-matched controls of the 2×2 ablation (causal vs uniform-weight Stage 3; uniform Stage 3 vs none; pretraining with total epochs matched): 54 paired exact-Wilcoxon tests with BH-FDR, written to `paper_c/control_statistics/results.json`; `--latex` prints the paper's control-table rows |
 | `causal_weight_evolution.py` | Visualizes how per-timepoint causal weights `w_i = exp(-epsilon * sum_{j<i} MSE(residual_j))` evolve during Stage-3 training, with vs without pretraining |
 | `clamping_ablation.py` | Isolates weight-magnitude collapse from gradient-direction conflict by comparing unclamped (`min_weight=0.0`) vs clamped (`min_weight=0.1`) `CausalLoss` across 9 PDEs × 10 seeds |
 | `generate_combined_gradient_fig.py` | Generates the combined 2×2 gradient-flow figure for the paper into `docs/paper_c_causal/figures/` |

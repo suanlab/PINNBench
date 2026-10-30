@@ -408,6 +408,10 @@ def main() -> None:
     ]
 
     rq6_payload = read_json(RESULTS_DIR / "rq6_ood" / "results.json")
+    # Five more seeds were run later with the same script (--seeds); pool them.
+    extra = RESULTS_DIR / "rq6_ood_seeds2" / "results.json"
+    if extra.exists():
+        rq6_payload["raw_results"] = rq6_payload["raw_results"] + read_json(extra)["raw_results"]
     # One pair per seed: the OOD metric is averaged over the shifted speeds.
     # (Earlier versions entered each (seed, speed) as its own pair, which treats
     # the two speeds of one trained model as independent replicates.)

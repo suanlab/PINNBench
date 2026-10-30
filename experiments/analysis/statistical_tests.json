@@ -48,7 +48,7 @@
     "better_group": "without_causal",
     "interpretation": "Burgers1D causal loss should remain a null or slightly negative result.",
     "bh_fdr_threshold": 0.0038461538461538464,
-    "bh_fdr_p_adjusted": 0.003627232142857143,
+    "bh_fdr_p_adjusted": 0.003173828125,
     "bh_fdr_significant": true
   },
   {
@@ -73,7 +73,7 @@
     "n_pairs": 5,
     "better_group": "with_causal",
     "interpretation": "AdvectionDiffusion1D causal loss should remain a weak/null effect.",
-    "bh_fdr_threshold": 0.04230769230769231,
+    "bh_fdr_threshold": 0.04615384615384616,
     "bh_fdr_p_adjusted": 0.06770833333333333,
     "bh_fdr_significant": false
   },
@@ -100,7 +100,7 @@
     "better_group": "hybrid_full",
     "interpretation": "Heat1D hybrid should show a large accuracy gain over PINN-only.",
     "bh_fdr_threshold": 0.007692307692307693,
-    "bh_fdr_p_adjusted": 0.003627232142857143,
+    "bh_fdr_p_adjusted": 0.003173828125,
     "bh_fdr_significant": true
   },
   {
@@ -126,7 +126,7 @@
     "better_group": "hybrid_full",
     "interpretation": "Wave2D hybrid should retain an in-domain accuracy gain over PINN-only.",
     "bh_fdr_threshold": 0.01153846153846154,
-    "bh_fdr_p_adjusted": 0.003627232142857143,
+    "bh_fdr_p_adjusted": 0.003173828125,
     "bh_fdr_significant": true
   },
   {
@@ -135,25 +135,25 @@
     "metric": "relative_l2_error",
     "group_a": "hybrid_full",
     "group_b": "pinn_only",
-    "group_a_mean": 0.9774088680744171,
-    "group_a_std": 0.02636325645329406,
-    "group_b_mean": 1.0405090510845185,
-    "group_b_std": 0.01280148108590715,
-    "mean_difference_a_minus_b": -0.06310018301010131,
+    "group_a_mean": 0.9805401384830474,
+    "group_a_std": 0.019541745589429633,
+    "group_b_mean": 1.0412351399660111,
+    "group_b_std": 0.010568312899229201,
+    "mean_difference_a_minus_b": -0.06069500148296356,
     "bootstrap_95ci_a_minus_b": [
-      -0.0888984203338623,
-      -0.037301945686340335
+      -0.0745523639023304,
+      -0.04747048303484918
     ],
-    "cohens_d_paired": -1.8861789833976417,
+    "cohens_d_paired": -2.579034536586899,
     "wilcoxon_w": 0.0,
     "wilcoxon_w_plus": 0.0,
-    "wilcoxon_p_two_sided": 0.0625,
-    "n_pairs": 5,
+    "wilcoxon_p_two_sided": 0.001953125,
+    "n_pairs": 10,
     "better_group": "hybrid_full",
     "interpretation": "OOD coefficient shift should reduce the hybrid advantage relative to in-domain.",
-    "bh_fdr_threshold": 0.04615384615384616,
-    "bh_fdr_p_adjusted": 0.06770833333333333,
-    "bh_fdr_significant": false
+    "bh_fdr_threshold": 0.015384615384615385,
+    "bh_fdr_p_adjusted": 0.003173828125,
+    "bh_fdr_significant": true
   },
   {
     "label": "RQ1e KdV1D causal ablation (10-seed)",
@@ -177,8 +177,8 @@
     "n_pairs": 10,
     "better_group": "with_causal",
     "interpretation": "KdV1D causal loss should remain at most a weak directional effect relative to its runtime cost.",
-    "bh_fdr_threshold": 0.015384615384615385,
-    "bh_fdr_p_adjusted": 0.003627232142857143,
+    "bh_fdr_threshold": 0.019230769230769232,
+    "bh_fdr_p_adjusted": 0.003173828125,
     "bh_fdr_significant": true
   },
   {
@@ -203,8 +203,8 @@
     "n_pairs": 10,
     "better_group": "with_causal",
     "interpretation": "AllenCahn1D causal loss should remain a near-null result.",
-    "bh_fdr_threshold": 0.038461538461538464,
-    "bh_fdr_p_adjusted": 0.035546875,
+    "bh_fdr_threshold": 0.04230769230769231,
+    "bh_fdr_p_adjusted": 0.03231534090909091,
     "bh_fdr_significant": true
   },
   {
@@ -229,8 +229,8 @@
     "n_pairs": 10,
     "better_group": "hybrid_full",
     "interpretation": "KdV1D hybrid should improve accuracy over PINN-only.",
-    "bh_fdr_threshold": 0.03076923076923077,
-    "bh_fdr_p_adjusted": 0.005642361111111111,
+    "bh_fdr_threshold": 0.03461538461538462,
+    "bh_fdr_p_adjusted": 0.005078125,
     "bh_fdr_significant": true
   },
   {
@@ -255,8 +255,8 @@
     "n_pairs": 10,
     "better_group": "hybrid_full",
     "interpretation": "AllenCahn1D hybrid should improve accuracy over PINN-only.",
-    "bh_fdr_threshold": 0.019230769230769232,
-    "bh_fdr_p_adjusted": 0.003627232142857143,
+    "bh_fdr_threshold": 0.02307692307692308,
+    "bh_fdr_p_adjusted": 0.003173828125,
     "bh_fdr_significant": true
   },
   {
@@ -281,8 +281,8 @@
     "n_pairs": 10,
     "better_group": "hybrid",
     "interpretation": "Heat1D hybrid should strongly outperform PINO on solution accuracy.",
-    "bh_fdr_threshold": 0.02307692307692308,
-    "bh_fdr_p_adjusted": 0.003627232142857143,
+    "bh_fdr_threshold": 0.026923076923076925,
+    "bh_fdr_p_adjusted": 0.003173828125,
     "bh_fdr_significant": true
   },
   {
@@ -307,8 +307,8 @@
     "n_pairs": 10,
     "better_group": "hybrid",
     "interpretation": "AdvDiff1D hybrid should outperform PINO on solution accuracy.",
-    "bh_fdr_threshold": 0.03461538461538462,
-    "bh_fdr_p_adjusted": 0.005642361111111111,
+    "bh_fdr_threshold": 0.038461538461538464,
+    "bh_fdr_p_adjusted": 0.005078125,
     "bh_fdr_significant": true
   },
   {
@@ -333,8 +333,8 @@
     "n_pairs": 10,
     "better_group": "pino",
     "interpretation": "Heat1D PINO should achieve lower PDE residual than the hybrid model.",
-    "bh_fdr_threshold": 0.026923076923076925,
-    "bh_fdr_p_adjusted": 0.003627232142857143,
+    "bh_fdr_threshold": 0.03076923076923077,
+    "bh_fdr_p_adjusted": 0.003173828125,
     "bh_fdr_significant": true
   }
 ]
