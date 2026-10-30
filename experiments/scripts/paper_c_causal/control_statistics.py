@@ -12,7 +12,10 @@ remove those confounds:
 * E1 extra training uniform-weight Stage 3 vs no Stage 3,
                    with and without pretraining.
 * E2 pretraining   Stage 1 + 500 Stage-2 epochs vs no Stage 1 + 700 Stage-2
-                   epochs (same total epochs), without and with Stage 3.
+                   epochs (same total epochs), without and with Stage 3.  The
+                   Stage-2 lambda_physics ramp is defined as a fraction of
+                   stage2_epochs, so the 700-epoch arm also ramps more slowly;
+                   this residual difference is not controlled.
 
 Each test pairs runs by seed on PDE residual and reports
 delta% = (reference - treatment) / reference * 100, so positive means the
