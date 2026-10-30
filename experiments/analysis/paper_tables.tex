@@ -1,0 +1,28 @@
+% Auto-generated from experiments/scripts/generate_paper_tables.py
+% Do NOT edit manually — rerun the script instead.
+
+% === CAUSAL_ABLATION_ROWS ===
+        Heat1D & Rel.\ $L_2$ & $0.389 \pm 0.054$ & $0.387 \pm 0.052$ & $0.53$ \\
+        Burgers1D & PDE Residual & $0.209 \pm 0.005$ & $0.194 \pm 0.007$ & $1.97$ \\
+        AdvDiff1D & Rel.\ $L_2$ & $0.580 \pm 0.131$ & $0.595 \pm 0.131$ & $-2.81$ \\
+
+% === LAMBDA_SWEEP_ROWS ===
+        $0.0$ & $0.395 \pm 0.136$ & $3.206 \pm 0.551$ & $0.023 \pm 0.013$ \\
+        $0.01$ & $0.361 \pm 0.078$ & $0.767 \pm 0.135$ & $0.018 \pm 0.008$ \\
+        $0.1$ & $0.385 \pm 0.068$ & $0.196 \pm 0.019$ & $0.020 \pm 0.007$ \\
+        $0.5$ & $0.402 \pm 0.062$ & $0.096 \pm 0.016$ & $0.022 \pm 0.006$ \\
+        $1.0$ & $0.419 \pm 0.055$ & $0.077 \pm 0.019$ & $0.024 \pm 0.006$ \\
+
+% === HYBRID_COMPARISON_ROWS ===
+        & PINN-only & $0.402 \pm 0.048$ & $0.063 \pm 0.010$ \\
+        & Hybrid (full) & $0.024 \pm 0.010$ & $0.013 \pm 0.006$ \\
+        \midrule
+        & PINN-only & $0.708 \pm 0.010$ & $0.017 \pm 0.003$ \\
+        & Hybrid (full) & $0.434 \pm 0.078$ & $0.071 \pm 0.018$ \\
+
+% === OOD_ROWS ===
+        PINN-only & & $0.706$ & $1.041$ & $0.018$ & $0.472$ \\
+        Hybrid (full) & & $0.419$ & $0.977$ & $0.077$ & $4.022$ \\
+        \midrule
+        \multicolumn{2}{l}{Degradation gap} & $+0.335$ / $+0.558$ & & $+0.455$ / $+3.945$ & \\
+

@@ -1,0 +1,55 @@
+# Default experiment configuration — aligned with the paper protocol
+# (docs/paper_combined/main.tex Sec. 4.1-4.2 and Experimental Protocol).
+# Per-experiment scripts under experiments/scripts/** may override these
+# values; any override is recorded in the result JSON's `config` field.
+# Usage: python -m causal_pinn.training.trainer --config experiments/configs/default.yaml
+
+name: "default_experiment"
+
+model:
+  pinn_hidden_dims: [64, 64, 64, 64]
+  pinn_activation: "gelu"
+  pinn_input_dim: 2
+  pinn_output_dim: 1
+  # Paper protocol: FNO modes=8, width=32, 4 spectral layers.
+  fno_modes: 8
+  fno_width: 32
+  fno_num_layers: 4
+  fno_dim: 1
+
+training:
+  # Paper protocol: 200/500/200 epochs across Stages 1/2/3.
+  # Stage 1: Operator pretrain
+  stage1_epochs: 200
+  stage1_lr: 1.0e-3
+
+  # Stage 2: Physics refinement
+  stage2_epochs: 500
+  stage2_lr: 1.0e-4
+  lambda_physics: 1.0
+  lambda_data: 1.0
+
+  # Stage 3: Causal calibration
+  stage3_epochs: 200
+  stage3_lr: 1.0e-5
+  causal_epsilon: 1.0
+
+  # General
+  batch_size: 256
+  # Paper protocol (run_policy_suite.py): 4,000 collocation / 500 boundary points.
+  num_collocation_points: 4000
+  num_boundary_points: 500
+  seed: 42
+  device: "cuda"
+
+evaluation:
+  # Paper protocol: 2,000 collocation / 200 boundary / 200 initial evaluation points.
+  num_eval_points: 2000
+  eval_metrics:
+    - "relative_l2"
+    - "mae"
+    - "pde_residual"
+    - "bc_violation"
+    - "ic_violation"
+
+output_dir: "experiments/results"

@@ -1,0 +1,237 @@
+{
+  "burgers1d_causal": {
+    "with_causal": {
+      "num_seeds": 10,
+      "stage3_initial_loss_mean": 0.10658529475331306,
+      "stage3_final_loss_mean": 0.10426246374845505,
+      "stage3_improvement_ratio": 0.9782068341581819,
+      "causal_loss_final_mean": 0.03918085470795631,
+      "eval_pde_residual_norm_mean": 0.20924536436796187,
+      "eval_pde_residual_norm_std": 0.004731425147291698,
+      "training_time_mean": 49.888368985705895
+    },
+    "without_causal": {
+      "num_seeds": 10,
+      "eval_pde_residual_norm_mean": 0.1939141109585762,
+      "eval_pde_residual_norm_std": 0.0063803246886613395,
+      "training_time_mean": 10.10780978249677
+    }
+  },
+  "heat1d_hybrid": {
+    "pinn_only": {
+      "num_seeds": 10,
+      "stage3_initial_loss_mean": 0.04639782458543777,
+      "stage3_final_loss_mean": 0.045764201879501344,
+      "stage3_improvement_ratio": 0.9863436979729585,
+      "causal_loss_final_mean": 0.004081813036464155,
+      "eval_relative_l2_error_mean": 0.4023441731929779,
+      "eval_relative_l2_error_std": 0.04549621550080188,
+      "eval_pde_residual_norm_mean": 0.06306379400193692,
+      "eval_pde_residual_norm_std": 0.00937978653328414,
+      "eval_mse_mean": 0.004117441340349614,
+      "eval_mse_std": 0.0009307968695837208,
+      "training_time_mean": 42.43422367572784
+    },
+    "hybrid_no_gate": {
+      "num_seeds": 10,
+      "stage3_initial_loss_mean": 0.0005936172441579401,
+      "stage3_final_loss_mean": 0.0004949999216478318,
+      "stage3_improvement_ratio": 0.8338705226631358,
+      "causal_loss_final_mean": 0.0003943633128073998,
+      "eval_relative_l2_error_mean": 0.021285395696759225,
+      "eval_relative_l2_error_std": 0.006306280818351863,
+      "eval_pde_residual_norm_mean": 0.02004357622936368,
+      "eval_pde_residual_norm_std": 0.005595921196721686,
+      "eval_mse_mean": 1.2442326897144084e-05,
+      "eval_mse_std": 7.45208464361341e-06,
+      "training_time_mean": 72.38290088176727
+    },
+    "hybrid_full": {
+      "num_seeds": 10,
+      "stage3_initial_loss_mean": 0.0003194283817720134,
+      "stage3_final_loss_mean": 0.0002729300591454376,
+      "stage3_improvement_ratio": 0.8544327139353471,
+      "causal_loss_final_mean": 0.00018986613213201053,
+      "eval_relative_l2_error_mean": 0.024195509403944014,
+      "eval_relative_l2_error_std": 0.009878905760169879,
+      "eval_pde_residual_norm_mean": 0.013468612264841796,
+      "eval_pde_residual_norm_std": 0.005665448766749774,
+      "eval_mse_mean": 1.7363318806928874e-05,
+      "eval_mse_std": 1.5240112180402488e-05,
+      "training_time_mean": 77.33480644226074
+    }
+  },
+  "wave2d_hybrid": {
+    "pinn_only": {
+      "num_seeds": 10,
+      "stage3_initial_loss_mean": 0.1932797074317932,
+      "stage3_final_loss_mean": 0.1966869980096817,
+      "stage3_improvement_ratio": 1.0176288065786259,
+      "causal_loss_final_mean": 0.00028745513263856993,
+      "eval_relative_l2_error_mean": 0.7083659589290618,
+      "eval_relative_l2_error_std": 0.009660916809444697,
+      "eval_pde_residual_norm_mean": 0.016652654577046632,
+      "eval_pde_residual_norm_std": 0.0027968206265520613,
+      "eval_mse_mean": 0.06657406240701676,
+      "eval_mse_std": 0.0025525345631133537,
+      "training_time_mean": 50.19349816800095
+    },
+    "hybrid_full": {
+      "num_seeds": 10,
+      "stage3_initial_loss_mean": 0.07457475699484348,
+      "stage3_final_loss_mean": 0.07390714138746261,
+      "stage3_improvement_ratio": 0.9910476998614018,
+      "causal_loss_final_mean": 0.0051364067010581495,
+      "eval_relative_l2_error_mean": 0.4342786133289337,
+      "eval_relative_l2_error_std": 0.07402229527218682,
+      "eval_pde_residual_norm_mean": 0.07112107388675212,
+      "eval_pde_residual_norm_std": 0.01687987518490335,
+      "eval_mse_mean": 0.025682787969708444,
+      "eval_mse_std": 0.008885328540049378,
+      "training_time_mean": 106.29301457651017
+    }
+  },
+  "kdv1d_causal": {
+    "with_causal": {
+      "num_seeds": 5,
+      "stage3_initial_loss_mean": 0.0008447217871434987,
+      "stage3_final_loss_mean": 0.0008546607568860054,
+      "stage3_improvement_ratio": 1.0117659682676308,
+      "causal_loss_final_mean": 1.9379112563910895e-05,
+      "eval_pde_residual_norm_mean": 0.004329060390591622,
+      "eval_pde_residual_norm_std": 0.0009203828810731014,
+      "training_time_mean": 50.54570596060948
+    },
+    "without_causal": {
+      "num_seeds": 5,
+      "eval_pde_residual_norm_mean": 0.004856569785624742,
+      "eval_pde_residual_norm_std": 0.0010521559506440044,
+      "training_time_mean": 17.59421751580667
+    }
+  },
+  "allencahn1d_causal": {
+    "with_causal": {
+      "num_seeds": 5,
+      "stage3_initial_loss_mean": 0.0178880762308836,
+      "stage3_final_loss_mean": 0.017597316578030587,
+      "stage3_improvement_ratio": 0.9837456164039027,
+      "causal_loss_final_mean": 0.014390107244253159,
+      "eval_pde_residual_norm_mean": 0.12066671997308731,
+      "eval_pde_residual_norm_std": 0.004242625434662389,
+      "training_time_mean": 40.69166002720594
+    },
+    "without_causal": {
+      "num_seeds": 5,
+      "eval_pde_residual_norm_mean": 0.12122137695550919,
+      "eval_pde_residual_norm_std": 0.004098902382931511,
+      "training_time_mean": 10.157660223799757
+    }
+  },
+  "heat1d_pino": {
+    "pinn_only": {
+      "num_seeds": 5,
+      "stage3_initial_loss_mean": 0.04366540163755417,
+      "stage3_final_loss_mean": 0.04277534261345863,
+      "stage3_improvement_ratio": 0.9796163783976272,
+      "causal_loss_final_mean": 0.004175000498071313,
+      "eval_relative_l2_error_mean": 0.38906641602516173,
+      "eval_relative_l2_error_std": 0.0480539172739738,
+      "eval_pde_residual_norm_mean": 0.06373239681124687,
+      "eval_pde_residual_norm_std": 0.010521151508250946,
+      "eval_mse_mean": 0.00383566552773118,
+      "eval_mse_std": 0.0010225262581251508,
+      "training_time_mean": 39.91327805519104
+    },
+    "pino": {
+      "num_seeds": 5,
+      "stage3_initial_loss_mean": 0.006391018070280552,
+      "stage3_final_loss_mean": 0.001726047322154045,
+      "stage3_improvement_ratio": 0.2700739229920962,
+      "eval_relative_l2_error_mean": 0.759459936618805,
+      "eval_relative_l2_error_std": 0.020405242262139123,
+      "eval_pde_residual_norm_mean": 0.00717965392395854,
+      "eval_pde_residual_norm_std": 0.00114823257229876,
+      "eval_mse_mean": 0.014384493604302407,
+      "eval_mse_std": 0.0010129343367690099,
+      "training_time_mean": 36.82865281105042
+    },
+    "hybrid": {
+      "num_seeds": 5,
+      "stage3_initial_loss_mean": 0.00018740268278634177,
+      "stage3_final_loss_mean": 0.00016302155563607812,
+      "stage3_improvement_ratio": 0.8698997965890348,
+      "causal_loss_final_mean": 0.00012406111927703022,
+      "eval_relative_l2_error_mean": 0.01802863832563162,
+      "eval_relative_l2_error_std": 0.003786649020419703,
+      "eval_pde_residual_norm_mean": 0.01060948073863983,
+      "eval_pde_residual_norm_std": 0.0019895684274525817,
+      "eval_mse_mean": 8.377288668270922e-06,
+      "eval_mse_std": 3.2713717320417186e-06,
+      "training_time_mean": 107.42391667366027
+    }
+  },
+  "kdv1d_hybrid": {
+    "pinn_only": {
+      "num_seeds": 5,
+      "stage3_initial_loss_mean": 0.012334517668932676,
+      "stage3_final_loss_mean": 0.011875869729556144,
+      "stage3_improvement_ratio": 0.9628158999251553,
+      "causal_loss_final_mean": 0.001869250409072265,
+      "eval_pde_residual_norm_mean": 0.039515810832381246,
+      "eval_pde_residual_norm_std": 0.012082982547019958,
+      "training_time_mean": 51.68944973945618
+    },
+    "hybrid_no_gate": {
+      "num_seeds": 5,
+      "stage3_initial_loss_mean": 0.0010368533898144961,
+      "stage3_final_loss_mean": 0.0009927963255904615,
+      "stage3_improvement_ratio": 0.9575088776708182,
+      "causal_loss_final_mean": 6.918433937244117e-05,
+      "eval_pde_residual_norm_mean": 0.007733193412423134,
+      "eval_pde_residual_norm_std": 0.003362326417589485,
+      "training_time_mean": 123.92489223480224
+    },
+    "hybrid_full": {
+      "num_seeds": 5,
+      "stage3_initial_loss_mean": 0.0010448919492773712,
+      "stage3_final_loss_mean": 0.0010072371456772088,
+      "stage3_improvement_ratio": 0.9639629689689888,
+      "causal_loss_final_mean": 3.720449858519714e-05,
+      "eval_pde_residual_norm_mean": 0.005781311262398958,
+      "eval_pde_residual_norm_std": 0.0012381792513601346,
+      "training_time_mean": 128.88587760925293
+    }
+  },
+  "allencahn1d_hybrid": {
+    "pinn_only": {
+      "num_seeds": 5,
+      "stage3_initial_loss_mean": 0.009174111485481262,
+      "stage3_final_loss_mean": 0.008668584004044532,
+      "stage3_improvement_ratio": 0.9448963006132239,
+      "causal_loss_final_mean": 0.006019152188673616,
+      "eval_pde_residual_norm_mean": 0.07323321998119355,
+      "eval_pde_residual_norm_std": 0.024731056867994546,
+      "training_time_mean": 40.64826498031616
+    },
+    "hybrid_no_gate": {
+      "num_seeds": 5,
+      "stage3_initial_loss_mean": 0.0007157715270295739,
+      "stage3_final_loss_mean": 0.0006157119059935212,
+      "stage3_improvement_ratio": 0.8602073185960658,
+      "causal_loss_final_mean": 0.00036721688229590654,
+      "eval_pde_residual_norm_mean": 0.018771588429808618,
+      "eval_pde_residual_norm_std": 0.004741882431084595,
+      "training_time_mean": 85.86087975502014
+    },
+    "hybrid_full": {
+      "num_seeds": 5,
+      "stage3_initial_loss_mean": 0.0004904098197584972,
+      "stage3_final_loss_mean": 0.00042452870111446827,
+      "stage3_improvement_ratio": 0.8656610940692987,
+      "causal_loss_final_mean": 0.00018907686753664166,
+      "eval_pde_residual_norm_mean": 0.013062191288918256,
+      "eval_pde_residual_norm_std": 0.003999456505575773,
+      "training_time_mean": 87.73956193923951
+    }
+  }
+}

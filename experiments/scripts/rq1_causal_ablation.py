@@ -1,0 +1,615 @@
+#!/usr/bin/env python3
+"""RQ1 Experiment: CausalLoss ON/OFF convergence stability comparison.
+
+This experiment investigates the impact of the AdaptiveCausalLoss stage (Stage 3)
+on training convergence and stability by comparing:
+
+1. "with_causal": Full 3-stage pipeline including AdaptiveCausalLoss calibration
+2. "without_causal": Only Stage 1 + Stage 2 (skipping causal calibration)
+
+Research Question: Does causal loss improve convergence stability?
+
+Metrics collected:
+- Training loss curves across all stages
+- Final evaluation metrics (relative L2 error, MSE, MAE, max error, PDE residual)
+- Convergence failure rates
+- Seed-to-seed variance
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+
+from causal_pinn.evaluation.benchmark_runner import BenchmarkConfig, BenchmarkRunner
+from causal_pinn.models.pinn.base import PINNBase
+from causal_pinn.physics.pde.heat_1d import Heat1D
+from causal_pinn.training.trainer import HybridTrainer
+from causal_pinn.utils.config import TrainingConfig
+from causal_pinn.utils.random import set_seed
+
+# Experiment configuration
+SEEDS = [42, 123, 456, 789, 1024]
+CONDITIONS = ["with_causal", "without_causal"]
+
+# Training hyperparameters (GPU full-scale)
+STAGE1_EPOCHS = 200
+STAGE1_LR = 1e-3
+STAGE2_EPOCHS = 500
+STAGE2_LR = 1e-4
+STAGE3_EPOCHS_WITH_CAUSAL = 200
+STAGE3_EPOCHS_WITHOUT_CAUSAL = 0
+STAGE3_LR = 1e-5
+CAUSAL_EPSILON = 1.0
+BATCH_SIZE = 256
+NUM_COLLOCATION_POINTS = 4000
+NUM_BOUNDARY_POINTS = 500
+DEVICE = "cuda"
+
+# Evaluation configuration
+EVAL_N_COLLOCATION = 2000
+EVAL_N_BOUNDARY = 200
+EVAL_N_INITIAL = 200
+
+# Model architecture
+MODEL_INPUT_DIM = 2
+MODEL_OUTPUT_DIM = 1
+MODEL_HIDDEN_DIMS = [64, 64, 64]
+
+
+@dataclass
+class SingleRunResult:
+    """Results from a single training run."""
+    condition: str
+    seed: int
+    training_history: dict[str, Any]
+    evaluation_metrics: dict[str, float]
+    total_training_time: float
+    final_total_loss: float
+
+
+@dataclass
+class AggregatedResults:
+    """Aggregated results across all runs."""
+    runs: list[SingleRunResult]
+    summary: dict[str, dict[str, Any]]
+
+
+def create_model() -> PINNBase:
+    """Create a fresh PINN model instance."""
+    return PINNBase(
+        input_dim=MODEL_INPUT_DIM,
+        output_dim=MODEL_OUTPUT_DIM,
+        hidden_dims=MODEL_HIDDEN_DIMS,
+    )
+
+
+def create_training_config(condition: str, seed: int) -> TrainingConfig:
+    """Create training configuration for a specific condition and seed."""
+    stage3_epochs = (
+        STAGE3_EPOCHS_WITH_CAUSAL
+        if condition == "with_causal"
+        else STAGE3_EPOCHS_WITHOUT_CAUSAL
+    )
+
+    return TrainingConfig(
+        stage1_epochs=STAGE1_EPOCHS,
+        stage1_lr=STAGE1_LR,
+        stage2_epochs=STAGE2_EPOCHS,
+        stage2_lr=STAGE2_LR,
+        stage3_epochs=stage3_epochs,
+        stage3_lr=STAGE3_LR,
+        causal_epsilon=CAUSAL_EPSILON,
+        batch_size=BATCH_SIZE,
+        num_collocation_points=NUM_COLLOCATION_POINTS,
+        num_boundary_points=NUM_BOUNDARY_POINTS,
+        seed=seed,
+        device=DEVICE,
+    )
+
+
+def run_single_experiment(condition: str, seed: int) -> SingleRunResult:
+    """Run a single training experiment for a given condition and seed."""
+    print(f"  Running {condition} with seed={seed}...")
+
+    # Set seed for reproducibility
+    set_seed(seed)
+
+    # Create fresh model and PDE problem
+    model = create_model()
+    pde_problem = Heat1D(alpha=1.0, length=1.0, t_max=1.0)
+
+    # Create training config
+    config = create_training_config(condition, seed)
+
+    # Create trainer
+    trainer = HybridTrainer(
+        model=model,
+        pde_problem=pde_problem,
+        config=config,
+        callbacks=None,
+        device=DEVICE,
+    )
+
+    # Train and measure time
+    start_time = time.perf_counter()
+    training_history = trainer.train()
+    total_training_time = time.perf_counter() - start_time
+
+    # Compute final total loss (sum of all stage final losses)
+    final_loss = 0.0
+    if training_history.get("stage1_total_loss"):
+        final_loss += training_history["stage1_total_loss"][-1]
+    if training_history.get("stage2_total_loss"):
+        final_loss += training_history["stage2_total_loss"][-1]
+    if training_history.get("stage3_total_loss"):
+        final_loss += training_history["stage3_total_loss"][-1]
+
+    # Evaluate model
+    benchmark_config = BenchmarkConfig(
+        n_collocation=EVAL_N_COLLOCATION,
+        n_boundary=EVAL_N_BOUNDARY,
+        n_initial=EVAL_N_INITIAL,
+        include_physics_consistency=False,
+        device=DEVICE,
+    )
+    runner = BenchmarkRunner(config=benchmark_config)
+    evaluation_metrics = runner.run_single(model, pde_problem)
+
+    # Convert tensor values to floats for JSON serialization
+    eval_metrics_serializable = {
+        k: float(v) if isinstance(v, (int, float, torch.Tensor)) else v
+        for k, v in evaluation_metrics.items()
+    }
+
+    return SingleRunResult(
+        condition=condition,
+        seed=seed,
+        training_history=training_history,
+        evaluation_metrics=eval_metrics_serializable,
+        total_training_time=total_training_time,
+        final_total_loss=final_loss,
+    )
+
+
+def aggregate_results(results: list[SingleRunResult]) -> AggregatedResults:
+    """Aggregate results by condition."""
+    summary = {}
+
+    for condition in CONDITIONS:
+        condition_results = [r for r in results if r.condition == condition]
+
+        if not condition_results:
+            continue
+
+        # Extract metrics
+        rel_l2_errors = [r.evaluation_metrics.get("relative_l2_error", float("nan"))
+                         for r in condition_results]
+        mses = [r.evaluation_metrics.get("mse", float("nan"))
+                for r in condition_results]
+        maes = [r.evaluation_metrics.get("mae", float("nan"))
+                for r in condition_results]
+        max_errors = [r.evaluation_metrics.get("max_error", float("nan"))
+                      for r in condition_results]
+        pde_residuals = [r.evaluation_metrics.get("pde_residual_norm", float("nan"))
+                         for r in condition_results]
+        final_losses = [r.final_total_loss for r in condition_results]
+        training_times = [r.total_training_time for r in condition_results]
+
+        summary[condition] = {
+            "n_runs": len(condition_results),
+            "rel_l2_mean": float(np.nanmean(rel_l2_errors)),
+            "rel_l2_std": float(np.nanstd(rel_l2_errors)),
+            "mse_mean": float(np.nanmean(mses)),
+            "mse_std": float(np.nanstd(mses)),
+            "mae_mean": float(np.nanmean(maes)),
+            "mae_std": float(np.nanstd(maes)),
+            "max_error_mean": float(np.nanmean(max_errors)),
+            "max_error_std": float(np.nanstd(max_errors)),
+            "pde_residual_mean": float(np.nanmean(pde_residuals)),
+            "pde_residual_std": float(np.nanstd(pde_residuals)),
+            "final_loss_mean": float(np.mean(final_losses)),
+            "final_loss_std": float(np.std(final_losses)),
+            "training_time_mean": float(np.mean(training_times)),
+            "training_time_std": float(np.std(training_times)),
+            "rel_l2_values": [float(x) for x in rel_l2_errors],
+            "mse_values": [float(x) for x in mses],
+            "mae_values": [float(x) for x in maes],
+            "max_error_values": [float(x) for x in max_errors],
+            "pde_residual_values": [float(x) for x in pde_residuals],
+            "final_loss_values": [float(x) for x in final_losses],
+        }
+
+    return AggregatedResults(runs=results, summary=summary)
+
+
+def plot_convergence_curves(
+    results: list[SingleRunResult],
+    output_path: Path,
+) -> None:
+    """Plot training loss curves (mean +/- std) for both conditions."""
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    colors = {"with_causal": "blue", "without_causal": "red"}
+
+    for condition in CONDITIONS:
+        condition_results = [r for r in results if r.condition == condition]
+
+        if not condition_results:
+            continue
+
+        # Collect all total losses across seeds
+        all_losses = []
+        max_len = 0
+
+        for r in condition_results:
+            # Combine all stage losses into single sequence
+            total_loss = (
+                r.training_history.get("stage1_total_loss", []) +
+                r.training_history.get("stage2_total_loss", []) +
+                r.training_history.get("stage3_total_loss", [])
+            )
+            all_losses.append(total_loss)
+            max_len = max(max_len, len(total_loss))
+
+        # Pad shorter sequences with NaN for alignment
+        padded_losses = np.full((len(all_losses), max_len), np.nan)
+        for i, loss_seq in enumerate(all_losses):
+            padded_losses[i, :len(loss_seq)] = loss_seq
+
+        # Compute mean and std
+        mean_loss = np.nanmean(padded_losses, axis=0)
+        std_loss = np.nanstd(padded_losses, axis=0)
+        epochs = np.arange(max_len)
+
+        # Plot with shaded std region
+        ax.plot(epochs, mean_loss, label=condition, color=colors[condition], linewidth=2)
+        ax.fill_between(
+            epochs,
+            mean_loss - std_loss,
+            mean_loss + std_loss,
+            color=colors[condition],
+            alpha=0.2,
+        )
+
+        # Mark stage boundaries
+        if condition == "with_causal":
+            stage1_end = STAGE1_EPOCHS
+            stage2_end = STAGE1_EPOCHS + STAGE2_EPOCHS
+            ax.axvline(x=stage1_end, color=colors[condition], linestyle="--", alpha=0.5)
+            ax.axvline(x=stage2_end, color=colors[condition], linestyle="--", alpha=0.5)
+
+    ax.set_xlabel("Epoch (all stages combined)")
+    ax.set_ylabel("Total Loss")
+    ax.set_title("RQ1: Training Convergence Curves\n(Mean +/- Std across seeds)")
+    ax.legend()
+    ax.set_yscale("log")
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
+def plot_final_metrics_comparison(
+    aggregated: AggregatedResults,
+    output_path: Path,
+) -> None:
+    """Plot grouped bar chart comparing final metrics between conditions."""
+    metrics = ["rel_l2", "mse", "mae", "max_error", "pde_residual"]
+    metric_labels = ["Rel. L2", "MSE", "MAE", "Max Error", "PDE Residual"]
+
+    x = np.arange(len(metrics))
+    width = 0.35
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    means_with = []
+    stds_with = []
+    means_without = []
+    stds_without = []
+
+    for metric in metrics:
+        with_causal = aggregated.summary.get("with_causal", {})
+        without_causal = aggregated.summary.get("without_causal", {})
+
+        means_with.append(with_causal.get(f"{metric}_mean", 0))
+        stds_with.append(with_causal.get(f"{metric}_std", 0))
+        means_without.append(without_causal.get(f"{metric}_mean", 0))
+        stds_without.append(without_causal.get(f"{metric}_std", 0))
+
+    ax.bar(x - width/2, means_with, width, label="with_causal",
+           yerr=stds_with, capsize=3, color="blue", alpha=0.7)
+    ax.bar(x + width/2, means_without, width, label="without_causal",
+           yerr=stds_without, capsize=3, color="red", alpha=0.7)
+
+    ax.set_xlabel("Metric")
+    ax.set_ylabel("Value")
+    ax.set_title("RQ1: Final Metrics Comparison\n(Mean +/- Std Error Bars)")
+    ax.set_xticks(x)
+    ax.set_xticklabels(metric_labels)
+    ax.legend()
+    ax.set_yscale("log")
+    ax.grid(True, alpha=0.3, axis="y")
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
+def plot_seed_variance(
+    aggregated: AggregatedResults,
+    output_path: Path,
+) -> None:
+    """Plot box plot showing distribution of final relative_l2_error across seeds."""
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    data = []
+    labels = []
+
+    for condition in CONDITIONS:
+        condition_summary = aggregated.summary.get(condition, {})
+        values = condition_summary.get("rel_l2_values", [])
+        if values:
+            data.append(values)
+            labels.append(condition)
+
+    bp = ax.boxplot(data, tick_labels=labels, patch_artist=True)
+
+    colors = {"with_causal": "lightblue", "without_causal": "lightcoral"}
+    for patch, label in zip(bp["boxes"], labels, strict=True):
+        patch.set_facecolor(colors.get(label, "white"))
+        patch.set_alpha(0.7)
+
+    # Add individual points
+    for i, (d, label) in enumerate(zip(data, labels, strict=True)):
+        x_jitter = np.random.normal(i + 1, 0.04, size=len(d))
+        ax.scatter(x_jitter, d, alpha=0.6, color=colors.get(label, "gray"), s=30)
+
+    ax.set_xlabel("Condition")
+    ax.set_ylabel("Relative L2 Error")
+    ax.set_title("RQ1: Seed-to-Seed Variance in Final Relative L2 Error")
+    ax.grid(True, alpha=0.3, axis="y")
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
+def plot_convergence_failure(
+    aggregated: AggregatedResults,
+    output_path: Path,
+) -> None:
+    """Plot bar chart of convergence failure rate."""
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    # Compute failure threshold: median final loss of with_causal condition
+    with_causal = aggregated.summary.get("with_causal", {})
+    with_causal_losses = with_causal.get("final_loss_values", [])
+
+    threshold = (
+        np.median(with_causal_losses)
+        if with_causal_losses
+        else float("inf")
+    )
+
+    failure_rates = {}
+    for condition in CONDITIONS:
+        condition_summary = aggregated.summary.get(condition, {})
+        losses = condition_summary.get("final_loss_values", [])
+
+        if losses:
+            failures = sum(1 for loss in losses if loss > threshold)
+            rate = failures / len(losses)
+        else:
+            rate = 0.0
+
+        failure_rates[condition] = rate
+
+    conditions = list(failure_rates.keys())
+    rates = [failure_rates[c] for c in conditions]
+    colors = {"with_causal": "blue", "without_causal": "red"}
+    colors_bar = [colors.get(c, "gray") for c in conditions]
+
+    bars = ax.bar(conditions, rates, color=colors_bar, alpha=0.7)
+
+    # Add value labels on bars
+    for bar, rate in zip(bars, rates, strict=True):
+        height = bar.get_height()
+        ax.annotate(f"{rate:.1%}",
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3),
+                    textcoords="offset points",
+                    ha="center", va="bottom")
+
+    ax.set_xlabel("Condition")
+    ax.set_ylabel("Failure Rate")
+    title = (
+        f"RQ1: Convergence Failure Rate\n"
+        f"(Threshold: median loss of with_causal = {threshold:.4f})"
+    )
+    ax.set_title(title)
+    ax.set_ylim(0, 1.0)
+    ax.grid(True, alpha=0.3, axis="y")
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
+def print_summary_table(aggregated: AggregatedResults) -> None:
+    """Print summary table to console."""
+    print("\n" + "=" * 80)
+    print("RQ1 EXPERIMENT RESULTS: CausalLoss ON/OFF Comparison")
+    print("=" * 80)
+    print()
+
+    # Header
+    header = (
+        f"{'Condition':<20} | {'Rel L2 (mean +/- std)':<25} | "
+        f"{'MSE (mean +/- std)':<25} | {'Failure Rate':<15}"
+    )
+    print(header)
+    print("-" * 95)
+
+    # Compute failure threshold
+    with_causal = aggregated.summary.get("with_causal", {})
+    with_causal_losses = with_causal.get("final_loss_values", [])
+    threshold = np.median(with_causal_losses) if with_causal_losses else float("inf")
+
+    for condition in CONDITIONS:
+        summary = aggregated.summary.get(condition, {})
+
+        rel_l2_mean = summary.get("rel_l2_mean", float("nan"))
+        rel_l2_std = summary.get("rel_l2_std", float("nan"))
+        mse_mean = summary.get("mse_mean", float("nan"))
+        mse_std = summary.get("mse_std", float("nan"))
+        losses = summary.get("final_loss_values", [])
+
+        if losses:
+            failures = sum(1 for loss in losses if loss > threshold)
+            failure_rate = failures / len(losses)
+        else:
+            failure_rate = 0.0
+
+        rel_l2_str = f"{rel_l2_mean:.4e} +/- {rel_l2_std:.4e}"
+        mse_str = f"{mse_mean:.4e} +/- {mse_std:.4e}"
+        failure_str = f"{failure_rate:.1%}"
+
+        print(f"{condition:<20} | {rel_l2_str:<25} | {mse_str:<25} | {failure_str:<15}")
+
+    print("-" * 95)
+    print()
+
+
+def save_results(aggregated: AggregatedResults, output_path: Path) -> None:
+    """Save aggregated results to JSON file."""
+    # Convert to serializable format
+    output = {
+        "experiment": "rq1_causal_ablation",
+        "description": "CausalLoss ON/OFF convergence stability comparison",
+        "seeds": SEEDS,
+        "conditions": CONDITIONS,
+        "training_config": {
+            "stage1_epochs": STAGE1_EPOCHS,
+            "stage1_lr": STAGE1_LR,
+            "stage2_epochs": STAGE2_EPOCHS,
+            "stage2_lr": STAGE2_LR,
+            "stage3_epochs_with_causal": STAGE3_EPOCHS_WITH_CAUSAL,
+            "stage3_epochs_without_causal": STAGE3_EPOCHS_WITHOUT_CAUSAL,
+            "stage3_lr": STAGE3_LR,
+            "causal_epsilon": CAUSAL_EPSILON,
+            "batch_size": BATCH_SIZE,
+            "num_collocation_points": NUM_COLLOCATION_POINTS,
+            "num_boundary_points": NUM_BOUNDARY_POINTS,
+            "device": DEVICE,
+        },
+        "model_config": {
+            "input_dim": MODEL_INPUT_DIM,
+            "output_dim": MODEL_OUTPUT_DIM,
+            "hidden_dims": MODEL_HIDDEN_DIMS,
+        },
+        "evaluation_config": {
+            "n_collocation": EVAL_N_COLLOCATION,
+            "n_boundary": EVAL_N_BOUNDARY,
+            "n_initial": EVAL_N_INITIAL,
+        },
+        "summary": aggregated.summary,
+        "runs": [
+            {
+                "condition": r.condition,
+                "seed": r.seed,
+                "evaluation_metrics": r.evaluation_metrics,
+                "total_training_time": r.total_training_time,
+                "final_total_loss": r.final_total_loss,
+            }
+            for r in aggregated.runs
+        ],
+    }
+
+    with open(output_path, "w") as f:
+        json.dump(output, f, indent=2)
+
+
+def main() -> None:
+    """Main experiment entry point."""
+    parser = argparse.ArgumentParser(
+        description="RQ1 Experiment: CausalLoss ON/OFF comparison"
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="experiments/results/rq1",
+        help="Output directory for results and plots (default: experiments/results/rq1)",
+    )
+    args = parser.parse_args()
+
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    print("=" * 80)
+    print("RQ1 Experiment: CausalLoss ON/OFF Convergence Stability Comparison")
+    print("=" * 80)
+    print("\nConfiguration:")
+    print(f"  Seeds: {SEEDS}")
+    print(f"  Conditions: {CONDITIONS}")
+    print(f"  Total runs: {len(SEEDS) * len(CONDITIONS)}")
+    print(f"  Output directory: {output_dir}")
+    print()
+
+    # Run all experiments
+    all_results: list[SingleRunResult] = []
+
+    for condition in CONDITIONS:
+        print(f"\n{'=' * 40}")
+        print(f"Condition: {condition}")
+        print(f"{'=' * 40}")
+
+        for seed in SEEDS:
+            result = run_single_experiment(condition, seed)
+            all_results.append(result)
+            print(f"    Completed: time={result.total_training_time:.2f}s, "
+                  f"rel_l2={result.evaluation_metrics.get('relative_l2_error', 'N/A'):.4e}")
+
+    # Aggregate results
+    print("\n" + "=" * 80)
+    print("Aggregating results...")
+    aggregated = aggregate_results(all_results)
+
+    # Save results
+    results_path = output_dir / "results.json"
+    save_results(aggregated, results_path)
+    print(f"Saved results to: {results_path}")
+
+    # Generate plots
+    print("\nGenerating plots...")
+
+    plot_convergence_curves(all_results, output_dir / "rq1_convergence_curves.png")
+    print("  Saved: rq1_convergence_curves.png")
+
+    plot_final_metrics_comparison(aggregated, output_dir / "rq1_final_metrics_comparison.png")
+    print("  Saved: rq1_final_metrics_comparison.png")
+
+    plot_seed_variance(aggregated, output_dir / "rq1_seed_variance.png")
+    print("  Saved: rq1_seed_variance.png")
+
+    plot_convergence_failure(aggregated, output_dir / "rq1_convergence_failure.png")
+    print("  Saved: rq1_convergence_failure.png")
+
+    # Print summary table
+    print_summary_table(aggregated)
+
+    print("\nExperiment complete!")
+    print(f"All outputs saved to: {output_dir}")
+
+
+if __name__ == "__main__":
+    main()

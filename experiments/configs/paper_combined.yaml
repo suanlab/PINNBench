@@ -1,0 +1,63 @@
+# Authoritative experiment configuration for the combined/long-form paper
+# (docs/paper_combined/main.tex) and the NeurIPS 2026 ED Track submission
+# (docs/paper_neurips_ed/main.tex).  This YAML encodes the exact protocol
+# documented in paper Sec. 4.1 (architecture) and Sec. 4.2 (training protocol).
+#
+# Any experiment that claims compatibility with the published numerical
+# results must load these values (or a superset that preserves them).  The
+# dataclass defaults in ``src/causal_pinn/utils/config.py`` are kept as
+# library defaults and may differ; individual scripts record their active
+# config in the output ``results.json::config`` field.
+#
+# Do not edit without cross-updating the paper text and CLAIM_INVENTORY.md.
+
+name: "paper_combined"
+
+model:
+  # PINN backbone: 4 hidden layers x 64 units, GELU.
+  pinn_hidden_dims: [64, 64, 64, 64]
+  pinn_activation: "gelu"
+  pinn_input_dim: 2
+  pinn_output_dim: 1
+  # Neural operator: FNO with 8 Fourier modes, width 32, 4 spectral layers.
+  fno_modes: 8
+  fno_width: 32
+  fno_num_layers: 4
+  fno_dim: 1
+
+training:
+  # Stage 1 -- operator pretraining on exact-solution supervised data.
+  stage1_epochs: 200
+  stage1_lr: 1.0e-3
+
+  # Stage 2 -- physics refinement with PDE residual + data loss.
+  stage2_epochs: 500
+  stage2_lr: 1.0e-4
+  lambda_physics: 1.0
+  lambda_data: 1.0
+
+  # Stage 3 -- causal calibration (temporal gating + causal weights).
+  stage3_epochs: 200
+  stage3_lr: 1.0e-5
+  causal_epsilon: 10.0
+
+  # Sampling + optimization (paper protocol).
+  batch_size: 128
+  num_collocation_points: 4000
+  num_boundary_points: 500
+  seed: 42
+  device: "cuda"
+
+evaluation:
+  # Evaluation point count matches the paper's 2,000 interior + 200 BC + 200 IC
+  # (BenchmarkRunner regenerates eval points per seed; see the
+  # "Known Reproducibility Caveats" section of docs/reproducibility_checklist.md).
+  num_eval_points: 2000
+  eval_metrics:
+    - "relative_l2"
+    - "mae"
+    - "pde_residual"
+    - "bc_violation"
+    - "ic_violation"
+
+output_dir: "experiments/results/paper_combined"

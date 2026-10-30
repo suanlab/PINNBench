@@ -1,0 +1,58 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+*.egg
+.sisyphus/notepads/
+
+# LaTeX build artifacts
+docs/**/*.aux
+docs/**/*.bbl
+docs/**/*.blg
+docs/**/*.out
+docs/**/*.log
+docs/**/*.fls
+docs/**/*.fdb_latexmk
+docs/**/*.synctex.gz
+docs/**/texput.log
+missfont.log
+
+# Paper drafts and submission packages — kept local only, not in public repo.
+# Matched by pattern rather than enumerated: the explicit list silently failed
+# to cover docs/paper_iclr/ when that draft was created.
+docs/paper*/
+
+# Internal planning notes / tooling caches
+.sisyphus/
+.omc/
+.claude/
+
+# Local-only audit / planning markdown (not shared publicly)
+AUDIT.md
+CHECK.md
+MODIFY.md
+PLAN.md
+REVIEW.md
+REVIEW2.md
+REVISION.md
+REFERENCE_AUDIT*.md
+findings.md
+research-log.md
+research-state.yaml
+to_human/
+literature/
+dataset_pinnbench/
+
+# Benchmark artifacts (~397 MB) — hosted on Hugging Face dataset suanlab/PINNBench
+# Run `make fetch-data` to populate locally; never commit to this repo.
+# No trailing slash: on machines where this is a symlink to external storage,
+# a `dir/` pattern would not match it.
+experiments/results
+
+# Timestamped stdout/stderr captures from long GPU runs
+experiments/logs/
