@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Download the PINNBench result artifacts from Hugging Face into ``experiments/results/``.
 
-The benchmark result JSONs (~397 MB) are hosted on the public Hugging Face
+The benchmark result JSONs (~555 MB) are hosted on the public Hugging Face
 dataset ``suanlab/PINNBench`` under the ``results/`` prefix.  This script
 fetches that prefix into ``<repo_root>/experiments/results/`` so that
 ``scripts/verify_claims.py`` and the per-experiment scripts can read them

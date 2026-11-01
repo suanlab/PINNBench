@@ -17,7 +17,7 @@ make lint            # ruff check src tests experiments
 make typecheck       # mypy src/causal_pinn (best-effort, non-blocking)
 make verify-claims   # recompute 9 headline claims from released JSONs (auto-fetches data)
 make release-check   # test + lint + verify-claims
-make fetch-data      # download ~397 MB result corpus into experiments/results/ (git-ignored)
+make fetch-data      # download ~555 MB result corpus into experiments/results/ (git-ignored)
 ```
 
 Single test (note the mandatory `PYTHONPATH=src`):

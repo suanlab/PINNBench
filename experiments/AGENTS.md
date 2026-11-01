@@ -9,7 +9,7 @@ Top-level harness for reproducing every empirical claim in the two papers cut fr
 ## Key Files
 | File | Description |
 |------|-------------|
-| `results` | The git-ignored result tree (~397 MB, 1,539+ runs), populated via `make fetch-data` from the `suanlab/PINNBench` Hugging Face dataset |
+| `results` | The git-ignored result tree (~555 MB, 3,545 runs), populated via `make fetch-data` from the `suanlab/PINNBench` Hugging Face dataset |
 
 ## Subdirectories
 | Directory | Purpose |

@@ -42,7 +42,7 @@ reproduce-smoke:
 	@echo "Smoke reproduction instructions:"
 	@echo "  See README.md 'Verification' section."
 	@echo "  Minimal smoke path (CPU-safe):"
-	@echo "    make fetch-data       # one-time, ~397 MB from Hugging Face"
+	@echo "    make fetch-data       # one-time, ~555 MB from Hugging Face"
 	@echo "    make test"
 	@echo "    make verify-claims"
 	@echo "  Full GPU reproduction (~40-50 GPU-hours):"

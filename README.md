@@ -48,7 +48,7 @@ pip install -e .[dev]
 
 ## Benchmark Artifacts (Hugging Face)
 
-The 3,175-run result corpus (~397 MB of JSONs, training histories, statistical
+The 3,545-run result corpus (~555 MB of JSONs, training histories, statistical
 tests, and figures) is hosted on Hugging Face and **not** in this repository:
 
 - Dataset: <https://huggingface.co/datasets/suanlab/PINNBench>
@@ -67,7 +67,7 @@ git so the source tree stays small.
 
 ```bash
 source .venv/bin/activate && pip install -e .[dev]   # one-time
-make fetch-data                                       # one-time, ~397 MB
+make fetch-data                                       # one-time, ~555 MB
 make test                                             # 390 tests, CPU-safe
 make verify-claims                                    # recomputes 9 headline claims
 make release-check                                    # test + lint + verify-claims

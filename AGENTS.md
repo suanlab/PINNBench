@@ -34,7 +34,7 @@ Note: several large uppercase markdown files (`AUDIT.md`, `CHECK.md`, `REVIEW*.m
 ### Working In This Directory
 - Always operate inside the venv: `source .venv/bin/activate`, install with `pip install -e .[dev]`.
 - **`PYTHONPATH=src` is mandatory for running any experiment script** — `pyproject.toml` sets `pythonpath=src` for pytest only, not for `python experiments/scripts/...`.
-- Experiment result JSONs (~397 MB, 1,539 runs) are **not in git**. They live on Hugging Face (`suanlab/PINNBench`) and land in `experiments/results/` via `make fetch-data`.
+- Experiment result JSONs (~555 MB, 3,545 runs) are **not in git**. They live on Hugging Face (`suanlab/PINNBench`) and land in `experiments/results/` via `make fetch-data`.
 - New code in `src/causal_pinn/` must be typed (mypy `disallow_untyped_defs = true`) and pass ruff (line length 100, rules `E,F,W,I,UP,B,SIM`).
 
 ### Testing Requirements

@@ -9,7 +9,7 @@ Small reproducibility helper scripts for the public repo. These fetch the benchm
 ## Key Files
 | File | Description |
 |------|-------------|
-| `fetch_data.py` | Downloads the ~397 MB `results/` prefix of the `suanlab/PINNBench` Hugging Face dataset into `experiments/results/`. Idempotent (skips if a `.hf_snapshot_complete` marker exists); pass `--force` to re-download. Requires `huggingface_hub`. |
+| `fetch_data.py` | Downloads the ~555 MB `results/` prefix of the `suanlab/PINNBench` Hugging Face dataset into `experiments/results/`. Idempotent (skips if a `.hf_snapshot_complete` marker exists); pass `--force` to re-download. Requires `huggingface_hub`. |
 | `audit_citations.py` | Checks every BibTeX entry against a primary record: Crossref by DOI (title, authors in order, print year, volume, pages; preprint/SSRN DOIs rejected), OpenReview by forum id, or the `url` page's own text (soft-404s fail). Exit 1 on any failure. Validated against a 12-case poisoned bib. Covers metadata only -- whether prose matches the cited work is a manual check (see `REFERENCE_AUDIT3.md`) |
 | `verify_claims.py` | Recomputes every headline claim in `CLAIM_INVENTORY.md` directly from the JSON artifacts under `experiments/results/` and prints a PASS/FAIL summary. Makes no model calls, runs on CPU in seconds, and auto-fetches via `fetch_data.py` if `experiments/results/` is empty. Exit code 0 if all claims match within tolerance (default 2% relative), 1 otherwise. |
 
