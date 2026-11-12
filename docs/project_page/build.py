@@ -52,6 +52,18 @@ def form_text(heading: str) -> str:
     return s[j:s.index("```", j)].strip()
 
 
+def lay_summary() -> str:
+    """The OpenReview lay summary, with the seed count stated as in the paper.
+
+    The submitted text says every setup was "repeated ten times"; only the core
+    conditions use 10 seeds (main.tex: secondary studies use 3-5).
+    """
+    text = form_text("## Lay Summary*")
+    old = "13 equation setups, each repeated ten times,"
+    assert old in text
+    return text.replace(old, "13 equation setups, with the core experiments repeated ten times,")
+
+
 def tex_to_html(text: str) -> str:
     """Render the few inline TeX forms the abstract uses, and set policy names as code."""
     text = html.escape(text, quote=False)
@@ -148,7 +160,7 @@ def main() -> None:
     page = (HERE / "template.html").read_text()
     fills = {
         "TLDR": html.escape(form_text("## TL;DR"), quote=False),
-        "LAY": html.escape(form_text("## Lay Summary*"), quote=False),
+        "LAY": html.escape(lay_summary(), quote=False),
         "ABSTRACT": tex_to_html(form_text("## Abstract*")),
         "BIBTEX": html.escape(bibtex(), quote=False),
         "UNIFORM": f"{means['extra_training/with pretraining']:+.1f}%",

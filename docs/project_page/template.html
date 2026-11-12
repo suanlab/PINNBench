@@ -6,6 +6,14 @@
 <title>PINNBench — Training Policy Selection in Hybrid PINN-Operator Solvers</title>
 <meta name="description" content="{{TLDR}}">
 <meta name="author" content="Suan Lee, Namhyeon Kim, Dongmin Jin">
+<meta name="citation_title" content="PINNBench: A Benchmark and Evaluation Study of Training Policy Selection in Hybrid PINN-Operator Solvers">
+<meta name="citation_author" content="Lee, Suan">
+<meta name="citation_author" content="Kim, Namhyeon">
+<meta name="citation_author" content="Jin, Dongmin">
+<meta name="citation_conference_title" content="Advances in Neural Information Processing Systems (NeurIPS), Evaluations and Datasets Track">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_pdf_url" content="https://suanlab.github.io/PINNBench/assets/PINNBench_NeurIPS2026.pdf">
+<meta name="theme-color" content="#020817">
 <meta property="og:type" content="website">
 <meta property="og:title" content="PINNBench (NeurIPS 2026 Evaluations & Datasets Track)">
 <meta property="og:description" content="{{TLDR}}">
@@ -36,7 +44,7 @@ code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 0.88em
 /* hero */
 .hero { background: var(--hero); color: #fff; padding: 56px 0 44px; }
 .hero-grid { display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center; }
-.eyebrow { display: flex; align-items: center; gap: 14px; font-size: 13px; font-weight: 700;
+.eyebrow { display: flex; line-height: 1.4; align-items: center; gap: 14px; font-size: 13px; font-weight: 700;
   letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin: 0 0 14px; }
 .eyebrow::before { content: ""; width: 34px; height: 2px; background: currentColor; }
 .hero .eyebrow { color: var(--sky); }
@@ -97,11 +105,11 @@ figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
 /* pipeline */
 .pipeline { display: flex; align-items: stretch; gap: 10px; margin: 6px 0 18px; }
 .stage { flex: 1; border-radius: 12px; padding: 14px; color: #fff; background: var(--blue); text-align: center; }
-.stage.c { background: var(--rose); }
+.stage.c { background: #E11D48; }
 .stage small { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; opacity: 0.85; }
 .stage b { display: block; font-size: 17px; margin: 2px 0; }
 .stage span { font-size: 13px; opacity: 0.9; }
-.arrow { align-self: center; color: var(--slate); font-size: 22px; }
+.arrow { align-self: center; color: #64748B; font-size: 22px; }
 table { border-collapse: collapse; width: 100%; font-size: 15px; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 th { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
@@ -113,7 +121,7 @@ ol.tips li::before { content: counter(t); width: 30px; height: 30px; border-radi
   color: #fff; font-weight: 700; font-size: 15px; display: grid; place-items: center; }
 pre { background: var(--code-bg); color: var(--code-ink); border-radius: 12px; padding: 18px 20px; overflow-x: auto;
   font: 14px/1.6 "JetBrains Mono", ui-monospace, monospace; margin: 0; }
-pre .c { color: #64748B; }
+pre .c { color: #94A3B8; }
 .bib { position: relative; }
 .copy { position: absolute; top: 10px; right: 10px; background: #1E293B; color: #E2E8F0; border: 1px solid #334155;
   border-radius: 8px; padding: 5px 12px; font: 600 13px Inter, Arial, sans-serif; cursor: pointer; }
@@ -177,7 +185,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
     <div class="stat"><b>13</b><span>PDE configurations</span></div>
     <div class="stat"><b>8</b><span>equation families</span></div>
     <div class="stat"><b>3–5</b><span>policies per PDE</span></div>
-    <div class="stat"><b>10</b><span>seeds per condition</span></div>
+    <div class="stat"><b>10</b><span>seeds per core condition</span></div>
     <div class="stat hl"><b>77×</b><span>accuracy–regret gap</span></div>
   </div>
 </div>
@@ -185,14 +193,14 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 <main>
 <section>
   <div class="wrap">
-    <div class="card tldr"><p class="eyebrow">TL;DR</p><p>{{TLDR}}</p></div>
-    <div class="card plain"><p class="eyebrow">In plain words</p><p>{{LAY}}</p></div>
+    <div class="card tldr"><h2 class="eyebrow">TL;DR</h2><p>{{TLDR}}</p></div>
+    <div class="card plain"><h2 class="eyebrow">In plain words</h2><p>{{LAY}}</p></div>
   </div>
 </section>
 
 <section id="abstract">
   <div class="wrap">
-    <p class="eyebrow">Abstract</p>
+    <h2 class="eyebrow">Abstract</h2>
     <div class="card abstract"><p>{{ABSTRACT}}</p></div>
   </div>
 </section>
@@ -206,14 +214,14 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
         <h3>Three-stage pipeline</h3>
         <div class="pipeline">
           <div class="stage"><small>STAGE 1</small><b>Pretraining</b><span>200 epochs</span></div>
-          <div class="arrow">→</div>
+          <div class="arrow" aria-hidden="true">→</div>
           <div class="stage"><small>STAGE 2</small><b>Physics refinement</b><span>500 epochs</span></div>
-          <div class="arrow">→</div>
+          <div class="arrow" aria-hidden="true">→</div>
           <div class="stage c"><small>STAGE 3</small><b>Causal calibration</b><span>200 epochs</span></div>
         </div>
         <p style="margin:0;color:var(--muted)">The hybrid blends a neural operator and a PINN through a
           learned gate, <i>u</i> = <i>g</i>·<i>u</i><sub>OP</sub> + (1 − <i>g</i>)·<i>u</i><sub>PINN</sub>.
-          All policies share this schedule and differ only in which components are active.</p>
+          All policies share this schedule; they differ in which components are active and in λ<sub>physics</sub>, and <code>pinn_only</code> has no operator.</p>
       </div>
       <div class="card">
         <h3>Policies</h3>
@@ -282,7 +290,8 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
       </div>
       <figure>
         <img src="assets/fig_controls.svg" alt="Change in PDE residual from extra training and from causal reweighting, per PDE">
-        <figcaption>Epoch-matched controls, 9 PDEs × 10 seeds; mean over PDEs in the boxes.</figcaption>
+        <figcaption>Epoch-matched controls, 9 PDEs × 10 seeds; mean over PDEs in the boxes. Stars mark statistical
+          significance only: the pretrained reweighting effects are all within ±1.2%.</figcaption>
       </figure>
     </div>
 
@@ -291,7 +300,9 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
         <div class="num">FAMILY HOLDOUT</div>
         <h3>Part of PDE-aware routing is family memory</h3>
         <p>PDE-aware routers reach 84.6% leave-one-PDE-out accuracy. When a PDE's whole family is held out
-          of training they fall to 61.5–69.2%, at or below a training-free physics-loss heuristic (69.2%).</p>
+          of training they fall to 61.5–69.2%, at or below a training-free physics-loss heuristic (69.2%).
+          The 84.6% itself needs fold-wise top-5 feature selection chosen on the same folds
+          (full-feature RF+PDE: 61.5%), so it is optimistic.</p>
       </div>
     </div>
   </div>
@@ -300,7 +311,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 <section id="practice">
   <div class="wrap grid2">
     <div class="card">
-      <p class="eyebrow">How to use these results</p>
+      <h2 class="eyebrow">How to use these results</h2>
       <ol class="tips">
         <li><span>Score routers by regret as well as top-1 accuracy, and first check how heavy-tailed best-policy quality is across your tasks.</span></li>
         <li><span>Pretrain, then add a short low-learning-rate stage; causal weights are optional.</span></li>
@@ -310,7 +321,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
       </ol>
     </div>
     <div class="card">
-      <p class="eyebrow">Scope and limits</p>
+      <h2 class="eyebrow">Scope and limits</h2>
       <ul class="clean">
         <li>Headline results use analytical reference solutions; regret needs an oracle, so the study cannot leave that regime.</li>
         <li>A 720-run noise × sparsity sweep, a <i>d</i>=3 heat equation and a multi-scale 2D problem test how far the main effect survives.</li>
@@ -339,7 +350,7 @@ make verify-claims   <span class="c"># recompute the paper's headline claims fro
 
 <section id="poster">
   <div class="wrap">
-    <p class="eyebrow">Poster</p>
+    <h2 class="eyebrow">Poster</h2>
     <div class="card poster">
       <a href="assets/PINNBench_poster.pdf"><img src="assets/poster.jpg" alt="PINNBench poster"></a>
       <p style="margin:12px 0 0;font-size:15px"><a href="assets/PINNBench_poster.pdf">Download the poster (PDF, 140 × 90 cm)</a></p>
@@ -349,7 +360,7 @@ make verify-claims   <span class="c"># recompute the paper's headline claims fro
 
 <section id="citation">
   <div class="wrap">
-    <p class="eyebrow">Citation</p>
+    <h2 class="eyebrow">Citation</h2>
     <div class="bib">
       <button class="copy" type="button" id="copy">Copy</button>
       <pre id="bibtex">{{BIBTEX}}</pre>
@@ -359,7 +370,7 @@ make verify-claims   <span class="c"># recompute the paper's headline claims fro
 
 <section id="ack">
   <div class="wrap">
-    <p class="eyebrow">Acknowledgments</p>
+    <h2 class="eyebrow">Acknowledgments</h2>
     <p style="margin:0;color:var(--muted)">This work was supported by the Ministry of Science and ICT and the
       National Research Foundation of Korea (NRF) grants funded by the Korean government (MSIT)
       (No. RS-2026-25498341 and No. RS-2025-24534935).</p>
