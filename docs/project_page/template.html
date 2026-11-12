@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PINNBench — Training Policy Selection in Hybrid PINN-Operator Solvers</title>
+<meta name="description" content="{{TLDR}}">
+<meta name="author" content="Suan Lee, Namhyeon Kim, Dongmin Jin">
+<meta property="og:type" content="website">
+<meta property="og:title" content="PINNBench (NeurIPS 2026 Evaluations & Datasets Track)">
+<meta property="og:description" content="{{TLDR}}">
+<meta property="og:url" content="https://suanlab.github.io/PINNBench/">
+<meta property="og:image" content="https://suanlab.github.io/PINNBench/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0F172A; --muted: #475569; --page: #F8FAFC; --card: #FFFFFF; --line: #E2E8F0;
+  --blue: #2563EB; --rose: #F43F5E; --sky: #7DD3FC; --slate: #94A3B8; --hero: #020817;
+  --band: #0F172A; --code-bg: #0F172A; --code-ink: #E2E8F0;
+  --max: 1080px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 400 17px/1.65 Inter, Arial, Helvetica, sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 0.88em;
+  background: #EEF2F7; padding: 0.1em 0.35em; border-radius: 4px; }
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+
+/* hero */
+.hero { background: var(--hero); color: #fff; padding: 56px 0 44px; }
+.hero-grid { display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center; }
+.eyebrow { display: flex; align-items: center; gap: 14px; font-size: 13px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin: 0 0 14px; }
+.eyebrow::before { content: ""; width: 34px; height: 2px; background: currentColor; }
+.hero .eyebrow { color: var(--sky); }
+.wordmark { font-size: clamp(52px, 9vw, 92px); font-weight: 800; letter-spacing: -0.03em;
+  line-height: 1; margin: 0; }
+.wordmark span { color: var(--sky); }
+.subtitle { font-size: clamp(20px, 2.6vw, 27px); font-weight: 700; line-height: 1.3;
+  margin: 18px 0 26px; max-width: 760px; }
+.authors { font-size: 19px; font-weight: 600; margin: 0; }
+.authors sup { color: var(--sky); }
+.affil { color: #CBD5E1; margin: 4px 0 0; font-size: 16px; }
+.affil a { color: #fff; font-weight: 600; }
+.badge { background: #fff; border-radius: 14px; padding: 18px 22px; display: grid; gap: 12px;
+  justify-items: center; width: 220px; }
+.badge img { display: block; max-width: 100%; height: auto; }
+.badge hr { width: 80%; border: 0; border-top: 1px solid var(--line); margin: 0; }
+.buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 999px;
+  font-weight: 600; font-size: 15px; background: #1E293B; color: #fff; border: 1px solid #334155; }
+.btn:hover { background: #334155; text-decoration: none; }
+.btn.primary { background: var(--blue); border-color: var(--blue); }
+.btn.primary:hover { background: #1D4ED8; }
+.btn svg { width: 17px; height: 17px; fill: currentColor; }
+
+/* stats band */
+.band { background: var(--band); color: #fff; }
+.stats { display: grid; grid-template-columns: repeat(6, 1fr); text-align: center; padding: 22px 0; }
+.stat b { display: block; font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
+.stat span { color: var(--slate); font-size: 14px; }
+.stat.hl b { color: var(--sky); }
+
+/* sections */
+section { padding: 56px 0 8px; }
+h2 { font-size: 32px; letter-spacing: -0.02em; line-height: 1.2; margin: 0 0 18px; }
+h3 { font-size: 21px; margin: 0 0 8px; letter-spacing: -0.01em; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 28px; }
+.tldr { border-left: 4px solid var(--blue); }
+.tldr p { margin: 0; font-size: 19px; font-weight: 500; }
+.plain { margin-top: 18px; }
+.plain p { margin: 0; color: var(--muted); }
+.abstract p { margin: 0; text-align: justify; hyphens: auto; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid2 > *, .finding > * { min-width: 0; }
+.table-wrap { overflow-x: auto; }
+.finding { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 28px; align-items: center; margin-bottom: 20px; }
+.finding .num { font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: var(--blue); }
+.finding p { margin: 8px 0 0; color: var(--muted); }
+.finding figure { margin: 0; }
+.finding img { width: 100%; height: auto; display: block; }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
+.callouts { display: grid; gap: 8px; margin-top: 16px; }
+.callout { background: var(--page); border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px;
+  display: grid; grid-template-columns: 92px 1fr; gap: 12px; align-items: center; }
+.callout b { font-size: 24px; letter-spacing: -0.02em; }
+.callout span { font-size: 14px; color: var(--muted); line-height: 1.4; }
+.big { font-size: 64px; font-weight: 800; letter-spacing: -0.03em; color: var(--rose); line-height: 1; }
+
+/* pipeline */
+.pipeline { display: flex; align-items: stretch; gap: 10px; margin: 6px 0 18px; }
+.stage { flex: 1; border-radius: 12px; padding: 14px; color: #fff; background: var(--blue); text-align: center; }
+.stage.c { background: var(--rose); }
+.stage small { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; opacity: 0.85; }
+.stage b { display: block; font-size: 17px; margin: 2px 0; }
+.stage span { font-size: 13px; opacity: 0.9; }
+.arrow { align-self: center; color: var(--slate); font-size: 22px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+ul.clean { margin: 0; padding-left: 20px; }
+ul.clean li { margin: 4px 0; }
+ol.tips { list-style: none; counter-reset: t; padding: 0; margin: 0; display: grid; gap: 12px; }
+ol.tips li { counter-increment: t; display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; }
+ol.tips li::before { content: counter(t); width: 30px; height: 30px; border-radius: 50%; background: var(--blue);
+  color: #fff; font-weight: 700; font-size: 15px; display: grid; place-items: center; }
+pre { background: var(--code-bg); color: var(--code-ink); border-radius: 12px; padding: 18px 20px; overflow-x: auto;
+  font: 14px/1.6 "JetBrains Mono", ui-monospace, monospace; margin: 0; }
+pre .c { color: #64748B; }
+.bib { position: relative; }
+.copy { position: absolute; top: 10px; right: 10px; background: #1E293B; color: #E2E8F0; border: 1px solid #334155;
+  border-radius: 8px; padding: 5px 12px; font: 600 13px Inter, Arial, sans-serif; cursor: pointer; }
+.copy:hover { background: #334155; }
+.poster img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--line); }
+footer { margin-top: 64px; padding: 32px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+
+@media (max-width: 860px) {
+  .hero-grid, .finding, .grid2 { grid-template-columns: 1fr; }
+  .badge { width: 200px; }
+  .stats { grid-template-columns: repeat(3, 1fr); row-gap: 14px; }
+  .pipeline { flex-direction: column; }
+  .arrow { transform: rotate(90deg); }
+}
+@media (max-width: 480px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 16px; }
+  .card { padding: 20px; }
+  h2 { font-size: 26px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat b { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">NeurIPS 2026 · Evaluations &amp; Datasets Track · Poster</p>
+      <h1 class="wordmark">PINN<span>Bench</span></h1>
+      <p class="subtitle">A Benchmark and Evaluation Study of Training Policy Selection in Hybrid PINN-Operator Solvers</p>
+      <p class="authors">Suan Lee<sup>*</sup> &nbsp;·&nbsp; Namhyeon Kim &nbsp;·&nbsp; Dongmin Jin</p>
+      <p class="affil">School of Computer Science, Semyung University &nbsp;·&nbsp; <sup>*</sup>Corresponding author:
+        <a href="mailto:suanlee@semyung.ac.kr">suanlee@semyung.ac.kr</a></p>
+      <nav class="buttons" aria-label="Resources">
+        <a class="btn primary" href="assets/PINNBench_NeurIPS2026.pdf">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l5 5v15H6zM14 3.5V8h4.5z"/></svg>Paper (PDF)</a>
+        <a class="btn" href="https://github.com/suanlab/PINNBench">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>Code</a>
+        <a class="btn" href="https://huggingface.co/datasets/suanlab/PINNBench">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5c0-1.7 3.6-3 8-3s8 1.3 8 3v14c0 1.7-3.6 3-8 3s-8-1.3-8-3zm2 4.3V12c0 .6 2.4 2 6 2s6-1.4 6-2V9.3c-1.5.8-3.6 1.2-6 1.2s-4.5-.4-6-1.2zm0 5V17c0 .6 2.4 2 6 2s6-1.4 6-2v-2.7c-1.5.8-3.6 1.2-6 1.2s-4.5-.4-6-1.2z"/></svg>Dataset</a>
+        <a class="btn" href="#poster">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v13H3zm2 2v9h14V6zM8 19h8v2H8z"/></svg>Poster</a>
+        <a class="btn" href="#citation">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h4v4H8.5c0 2 .8 3 2.5 3.5V17c-3-.5-4-2.7-4-6zm7 0h4v4h-2.5c0 2 .8 3 2.5 3.5V17c-3-.5-4-2.7-4-6z"/></svg>BibTeX</a>
+      </nav>
+    </div>
+    <div class="badge">
+      <img src="assets/smu_logo.png" alt="Semyung University" width="110">
+      <hr>
+      <img src="assets/lab_logo.png" alt="Data Intelligence Laboratory" width="176">
+    </div>
+  </div>
+</header>
+
+<div class="band">
+  <div class="wrap stats">
+    <div class="stat"><b>3,545</b><span>recorded runs</span></div>
+    <div class="stat"><b>13</b><span>PDE configurations</span></div>
+    <div class="stat"><b>8</b><span>equation families</span></div>
+    <div class="stat"><b>3–5</b><span>policies per PDE</span></div>
+    <div class="stat"><b>10</b><span>seeds per condition</span></div>
+    <div class="stat hl"><b>77×</b><span>accuracy–regret gap</span></div>
+  </div>
+</div>
+
+<main>
+<section>
+  <div class="wrap">
+    <div class="card tldr"><p class="eyebrow">TL;DR</p><p>{{TLDR}}</p></div>
+    <div class="card plain"><p class="eyebrow">In plain words</p><p>{{LAY}}</p></div>
+  </div>
+</section>
+
+<section id="abstract">
+  <div class="wrap">
+    <p class="eyebrow">Abstract</p>
+    <div class="card abstract"><p>{{ABSTRACT}}</p></div>
+  </div>
+</section>
+
+<section id="benchmark">
+  <div class="wrap">
+    <p class="eyebrow">Benchmark</p>
+    <h2>One solver family, five training policies</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>Three-stage pipeline</h3>
+        <div class="pipeline">
+          <div class="stage"><small>STAGE 1</small><b>Pretraining</b><span>200 epochs</span></div>
+          <div class="arrow">→</div>
+          <div class="stage"><small>STAGE 2</small><b>Physics refinement</b><span>500 epochs</span></div>
+          <div class="arrow">→</div>
+          <div class="stage c"><small>STAGE 3</small><b>Causal calibration</b><span>200 epochs</span></div>
+        </div>
+        <p style="margin:0;color:var(--muted)">The hybrid blends a neural operator and a PINN through a
+          learned gate, <i>u</i> = <i>g</i>·<i>u</i><sub>OP</sub> + (1 − <i>g</i>)·<i>u</i><sub>PINN</sub>.
+          All policies share this schedule and differ only in which components are active.</p>
+      </div>
+      <div class="card">
+        <h3>Policies</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Policy</th><th>Operator</th><th>Gate</th><th>λ<sub>physics</sub></th></tr></thead>
+          <tbody>
+            <tr><td><code>pinn_only</code></td><td>—</td><td>—</td><td>1.0</td></tr>
+            <tr><td><code>hybrid_no_gate</code></td><td>yes</td><td>—</td><td>1.0</td></tr>
+            <tr><td><code>hybrid_full</code></td><td>yes</td><td>yes</td><td>1.0</td></tr>
+            <tr><td><code>hybrid_full_lambda0.1</code></td><td>yes</td><td>yes</td><td>0.1</td></tr>
+            <tr><td><code>hybrid_full_lambda0.5</code></td><td>yes</td><td>yes</td><td>0.5</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin:12px 0 0;color:var(--muted);font-size:15px">Scored with seven metrics, Wilcoxon
+          signed-rank tests, paired bootstrap 95% CIs, Cohen's <i>d</i> and Benjamini–Hochberg FDR.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="findings">
+  <div class="wrap">
+    <p class="eyebrow">Findings</p>
+    <h2>What the benchmark shows</h2>
+
+    <div class="card finding">
+      <div>
+        <div class="num">FINDING 1</div>
+        <h3>No policy dominates</h3>
+        <p>Under PDE residual, <code>hybrid_full</code> wins 7 of 13 configurations,
+          <code>hybrid_no_gate</code> 4, and <code>pinn_only</code> 2. The policy has to be chosen per problem.</p>
+      </div>
+      <figure>
+        <img src="assets/fig_no_dominance.svg" alt="Bar chart of PDE residual per policy across 13 PDE configurations">
+        <figcaption>Best-performing policy varies across 13 PDE configurations under the PDE-residual objective.</figcaption>
+      </figure>
+    </div>
+
+    <div class="card finding">
+      <div>
+        <div class="num">FINDING 2</div>
+        <h3>Accuracy is not regret</h3>
+        <div class="big">77×</div>
+        <p>Under relative L<sub>2</sub>, the physics-loss heuristic picks the best policy as often as a
+          Random Forest router (5 of 8 PDEs), but its mean regret is 0.0850 against 0.0011. Score routers by
+          how much they lose, not only by how often they are right.</p>
+      </div>
+      <figure>
+        <img src="assets/fig_dissociation.svg" alt="Routing accuracy and routing regret of five routers">
+        <figcaption>Equal top-1 accuracy, a 77× difference in mean realized regret.</figcaption>
+      </figure>
+    </div>
+
+    <div class="card finding">
+      <div>
+        <div class="num">FINDING 3</div>
+        <h3>The causal-loss gain is extra training</h3>
+        <p>Epoch-matched controls separate the causal weights from the extra Stage-3 epochs.
+          A uniform-weight Stage 3 of the same length gains as much as the causal one, while the causal
+          reweighting itself is negligible after pretraining and harmful without it.</p>
+        <div class="callouts">
+          <div class="callout"><b style="color:var(--blue)">{{UNIFORM}}</b><span>uniform-weight Stage 3, pretrained</span></div>
+          <div class="callout"><b style="color:var(--muted)">{{RW_PRE}}</b><span>causal vs uniform weights, pretrained</span></div>
+          <div class="callout"><b style="color:var(--rose)">{{RW_NOPRE}}</b><span>causal vs uniform weights, no pretraining (9/9 worse)</span></div>
+        </div>
+      </div>
+      <figure>
+        <img src="assets/fig_controls.svg" alt="Change in PDE residual from extra training and from causal reweighting, per PDE">
+        <figcaption>Epoch-matched controls, 9 PDEs × 10 seeds; mean over PDEs in the boxes.</figcaption>
+      </figure>
+    </div>
+
+    <div class="card finding" style="grid-template-columns:1fr">
+      <div>
+        <div class="num">FAMILY HOLDOUT</div>
+        <h3>Part of PDE-aware routing is family memory</h3>
+        <p>PDE-aware routers reach 84.6% leave-one-PDE-out accuracy. When a PDE's whole family is held out
+          of training they fall to 61.5–69.2%, at or below a training-free physics-loss heuristic (69.2%).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="practice">
+  <div class="wrap grid2">
+    <div class="card">
+      <p class="eyebrow">How to use these results</p>
+      <ol class="tips">
+        <li><span>Score routers by regret as well as top-1 accuracy, and first check how heavy-tailed best-policy quality is across your tasks.</span></li>
+        <li><span>Pretrain, then add a short low-learning-rate stage; causal weights are optional.</span></li>
+        <li><span>Without pretraining, do not use causal weighting.</span></li>
+        <li><span>Distrust the probe on shock problems: both regret-check violations are Burgers configurations.</span></li>
+        <li><span>Use a hybrid at or near its training regime; on Wave2D it is twice as bad as <code>pinn_only</code> at 1.5–2× domain rescaling.</span></li>
+      </ol>
+    </div>
+    <div class="card">
+      <p class="eyebrow">Scope and limits</p>
+      <ul class="clean">
+        <li>Headline results use analytical reference solutions; regret needs an oracle, so the study cannot leave that regime.</li>
+        <li>A 720-run noise × sparsity sweep, a <i>d</i>=3 heat equation and a multi-scale 2D problem test how far the main effect survives.</li>
+        <li>11 of the 13 routing configurations are one-dimensional.</li>
+        <li>No claim is made about real-data deployment.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="start">
+  <div class="wrap">
+    <p class="eyebrow">Get started</p>
+    <h2>Reproduce the headline numbers</h2>
+    <pre><span class="c"># Python 3.12</span>
+git clone https://github.com/suanlab/PINNBench.git &amp;&amp; cd PINNBench
+python -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -e ".[dev]"
+
+make fetch-data      <span class="c"># result corpus from Hugging Face (~555 MB)</span>
+make verify-claims   <span class="c"># recompute the paper's headline claims from the JSONs</span></pre>
+    <p style="color:var(--muted);margin:14px 0 0">The dataset holds every result JSON, training history and
+      statistical test, with Croissant metadata. Code is MIT-licensed; data is Apache-2.0.</p>
+  </div>
+</section>
+
+<section id="poster">
+  <div class="wrap">
+    <p class="eyebrow">Poster</p>
+    <div class="card poster">
+      <a href="assets/PINNBench_poster.pdf"><img src="assets/poster.jpg" alt="PINNBench poster"></a>
+      <p style="margin:12px 0 0;font-size:15px"><a href="assets/PINNBench_poster.pdf">Download the poster (PDF, 140 × 90 cm)</a></p>
+    </div>
+  </div>
+</section>
+
+<section id="citation">
+  <div class="wrap">
+    <p class="eyebrow">Citation</p>
+    <div class="bib">
+      <button class="copy" type="button" id="copy">Copy</button>
+      <pre id="bibtex">{{BIBTEX}}</pre>
+    </div>
+  </div>
+</section>
+
+<section id="ack">
+  <div class="wrap">
+    <p class="eyebrow">Acknowledgments</p>
+    <p style="margin:0;color:var(--muted)">This work was supported by the Ministry of Science and ICT and the
+      National Research Foundation of Korea (NRF) grants funded by the Korean government (MSIT)
+      (No. RS-2026-25498341 and No. RS-2025-24534935).</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Suan Lee, Namhyeon Kim, Dongmin Jin · Data Intelligence Laboratory, Semyung University</span>
+    <span><a href="https://github.com/suanlab/PINNBench">GitHub</a> · <a href="https://huggingface.co/datasets/suanlab/PINNBench">Hugging Face</a> · <a href="https://suanlab.com">suanlab.com</a></span>
+  </div>
+</footer>
+
+<script>
+document.getElementById("copy").addEventListener("click", function () {
+  var b = this, t = document.getElementById("bibtex").textContent;
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(
+    function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); },
+    function () { b.textContent = "Select and copy"; });
+});
+</script>
+</body>
+</html>

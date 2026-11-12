@@ -56,3 +56,6 @@ experiments/results
 
 # Timestamped stdout/stderr captures from long GPU runs
 experiments/logs/
+
+# Generated project page (deployed to the gh-pages branch, not kept on master)
+docs/project_page/site/
